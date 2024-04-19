@@ -26,7 +26,7 @@ const options = {
   density: 15000, // the lower the denser
   netLineDistance: 200,
   netLineColor: '#929292',
-  particleColors: ['#aaa'],
+  particleColors: ['#aaa'], // ['#6D4E5C', '#aaa', '#FFC458' ]
 };
 
 const init = (elementId: string) => {
@@ -46,7 +46,7 @@ const init = (elementId: string) => {
     initParticleNetwork();
     bindUiActions();
 
-    // debounce the resize event
+    // debounce
     window.addEventListener(
       'resize',
       debounce(() => {
@@ -127,10 +127,10 @@ const updateParticleNetwork = () => {
 };
 
 const createParticles = (isInitial: boolean) => {
-  var quantity = (canvas.width * canvas.height) / options.density;
+  let quantity = (canvas.width * canvas.height) / options.density;
 
   if (isInitial) {
-    var counter = 0;
+    let counter = 0;
     clearInterval(createIntervalId);
     createIntervalId = setInterval(function () {
       if (counter < quantity - 1) {
@@ -146,7 +146,7 @@ const createParticles = (isInitial: boolean) => {
     }, 250);
   } else {
     // Create particle objects
-    for (var i = 0; i < quantity; i++) {
+    for (let i = 0; i < quantity; i++) {
       const particle = createParticle();
       if (particle) {
         particles.push(particle);
@@ -159,8 +159,8 @@ const createParticles = (isInitial: boolean) => {
 const createParticle = (overwriteX?: number, overwriteY?: number) => {
   const pos = generateRandomPosition();
   return {
-    x: overwriteX || pos.x,
-    y: overwriteY || pos.y,
+    x: overwriteX ?? pos.x,
+    y: overwriteY ?? pos.y,
     opacity: 0,
     radius: getLimitedRandom(1.5, 2.5, true),
     particleColor: options.particleColors[Math.floor(Math.random() * options.particleColors.length)],
@@ -172,6 +172,8 @@ const createParticle = (overwriteX?: number, overwriteY?: number) => {
 };
 
 const updateParticle = function (particle: Particle) {
+  if (!canvas) return;
+
   if (particle.opacity < 1) {
     particle.opacity += 0.01;
   } else {
@@ -207,12 +209,11 @@ const createInteractionParticle = () => {
     y: 0,
   };
   particles.push(interactionParticle);
-  return interactionParticle; // TODO: remove return if not needed
 };
 
 const removeInteractionParticle = () => {
   if (interactionParticle) {
-    var index = particles.indexOf(interactionParticle);
+    let index = particles.indexOf(interactionParticle);
     if (index > -1) {
       interactionParticle = undefined;
       particles.splice(index, 1);
@@ -249,14 +250,14 @@ const bindUiActions = () => {
 
   canvas.addEventListener('mousedown', (_e: MouseEvent) => {
     mouseIsDown = true;
-    var counter = 0;
-    var quantity = spawnQuantity;
-    var intervalId = setInterval(function () {
+    let counter = 0;
+    let quantity = spawnQuantity;
+    let intervalId = setInterval(function () {
       if (mouseIsDown) {
         if (counter === 1) {
           quantity = 1;
         }
-        for (var i = 0; i < quantity; i++) {
+        for (let i = 0; i < quantity; i++) {
           if (interactionParticle) {
             const particle = createParticle(interactionParticle.x, interactionParticle.y);
             particles.push(particle);
@@ -271,7 +272,7 @@ const bindUiActions = () => {
   canvas.addEventListener('touchstart', (e) => {
     setTimeout(function () {
       if (!touchIsMoving) {
-        for (var i = 0; i < spawnQuantity; i++) {
+        for (let i = 0; i < spawnQuantity; i++) {
           const particle = createParticle(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
           particles.push(particle);
         }
@@ -285,7 +286,7 @@ const bindUiActions = () => {
   canvas.addEventListener('mouseout', (_e: MouseEvent) => {
     removeInteractionParticle();
   });
-  canvas.addEventListener('touchend', (e) => {
+  canvas.addEventListener('touchend', (_e) => {
     touchIsMoving = false;
     removeInteractionParticle();
   });
@@ -301,7 +302,7 @@ const generateRandomPosition = () => {
 };
 
 const getLimitedRandom = (min: number, max: number, roundToInteger: boolean = false) => {
-  var number = Math.random() * (max - min) + min;
+  let number = Math.random() * (max - min) + min;
   if (roundToInteger) {
     number = Math.round(number);
   }
