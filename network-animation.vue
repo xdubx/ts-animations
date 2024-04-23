@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 type Particle = {
   opacity: number;
@@ -29,8 +29,10 @@ const options = {
   particleColors: ['#aaa'], // ['#6D4E5C', '#aaa', '#FFC458' ]
 };
 
-const init = (elementId: string) => {
-  const elem = document.getElementById(elementId);
+const animationContainer = ref<HTMLElement>();
+
+const init = () => {
+  const elem = animationContainer.value;
   if (elem) {
     container = elem;
     canvas = document.createElement('canvas');
@@ -112,11 +114,10 @@ const updateParticleNetwork = () => {
     }
 
     // Draw particles
-    for (let index = 0; index < particles.length; index++) {
-      const particle = particles[index];
+    particles.forEach((particle) => {
       updateParticle(particle);
       drawParticle(particle);
-    }
+    });
 
     if (options.velocity !== 0) {
       animationFrame = requestAnimationFrame(updateParticleNetwork.bind(this));
@@ -324,21 +325,31 @@ const debounce = (mainFunction: () => void, delay: number) => {
 };
 
 onMounted(() => {
-  init('particle-network-animation');
+  init();
+});
+
+onBeforeUnmount(() => {
+  // clear up
+  cancelAnimationFrame(animationFrame);
+
+  // duplicate note to remove listeners
+  if (canvas) {
+    canvas.replaceWith(canvas.cloneNode(true));
+  }
 });
 </script>
 <template>
-  <div id="particle-network-animation"></div>
+  <div ref="animationContainer" class="network"></div>
 </template>
 <style lang="scss" scoped>
-#particle-network-animation {
+.network {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: calc(100vh - var(--top-bar-height));
   z-index: 1;
-
+  overflow: hidden;
   &::before {
     z-index: -2;
     content: '';
